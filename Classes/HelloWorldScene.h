@@ -23,6 +23,8 @@ private:
 	CustomCommand _gradient_command;
 	CustomCommand _tophighlight_command;
 
+	Terrain *_terrain;
+
 	Sprite* spriteWithColor(Color4F bgColor, float textureWidth, float textureHeight);
 	Color4F randomBrightColor();
 	void genBackground();

@@ -223,24 +223,29 @@ void HelloWorld::genBackground()
 	}
 
 	Color4F bgColor = randomBrightColor();
-	Color4F color2 = randomBrightColor();
-	//_background = spriteWithColor(bgColor, 512, 512);
-
-	int nStripes = ((rand() % 4) + 1) * 2;
-	_background = stripedSpriteWithColor(bgColor, color2, 512, 512, nStripes);
+	_background = spriteWithColor(bgColor, 512, 512);
 
 	Size winSize = Director::getInstance()->getWinSize();
 	_background->setPosition(Vec2(winSize.width / 2, winSize.height / 2));
-
 	Texture2D::TexParams tp = { GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT };
 	_background->getTexture()->setTexParameters(&tp);
 
-	addChild(_background);
+	addChild(_background, 0);
+
+	Color4F color3 = randomBrightColor();
+	Color4F color4 = randomBrightColor();
+	Sprite *stripes = stripedSpriteWithColor(color3, color4, 512, 512, 4);
+	Texture2D::TexParams tp2 = { GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_CLAMP_TO_EDGE };
+	stripes->getTexture()->setTexParameters(&tp2);
+	_terrain->setStripes(stripes);
 }
 
 void HelloWorld::onEnter()
 {
 	Layer::onEnter();
+
+	_terrain = Terrain::create();
+	addChild(_terrain, 1);
 
 	genBackground();
 
@@ -265,4 +270,6 @@ void HelloWorld::update(float dt)
 
 	Size textureSize = _background->getTextureRect().size;
 	_background->setTextureRect(Rect(offset, 0, textureSize.width, textureSize.height));
+
+	_terrain->setOffsetX(offset);
 }
