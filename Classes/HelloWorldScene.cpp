@@ -34,6 +34,11 @@ Sprite* HelloWorld::spriteWithColor(Color4F bgColor, float textureWidth, float t
 
 	// 3: Draw into the texture
 
+	//// noise cloud
+	Sprite *noise = Sprite::create("Noise.png");
+	noise->setBlendFunc(BlendFunc{ GL_DST_COLOR, GL_ZERO });
+	noise->setPosition(Vec2(textureWidth / 2, textureHeight / 2));
+	noise->visit();
 
 	// 4: Call CCRenderTexture:end
 	rt->end();
@@ -41,8 +46,6 @@ Sprite* HelloWorld::spriteWithColor(Color4F bgColor, float textureWidth, float t
 	// 5: Create a new Sprite from the texture
 	return Sprite::createWithTexture(rt->getSprite()->getTexture());
 }
-
-
 
 Color4F HelloWorld::randomBrightColor()
 {
