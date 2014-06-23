@@ -3,6 +3,8 @@
 Terrain::Terrain()
 {
 	_stripes = nullptr;
+	_fromKeyPointI = 0;
+	_toKeyPointI = 0;
 }
 
 Terrain::~Terrain()
@@ -30,6 +32,7 @@ bool Terrain::init()
 	}
 
 	generateHills();
+	resetHillVertices();
 
 	return true;
 }
@@ -79,7 +82,8 @@ void Terrain::generateHills()
 
 void Terrain::draw(Renderer *renderer, const Mat4& transform, uint32_t flags)
 {
-	for (int i = 1; i < kMaxHillKeyPoints; ++i) {
+	for (int i = MAX(_fromKeyPointI, 1); i <= _toKeyPointI; ++i) {
+		DrawPrimitives::setDrawColor4F(1.0, 0, 0, 1.0);
 		DrawPrimitives::drawLine(_hillKeyPoints[i - 1], _hillKeyPoints[i]);
 	}
 }
@@ -88,6 +92,8 @@ void Terrain::setOffsetX(float nOffsetX)
 {
 	_offsetX = nOffsetX;
 	setPosition(Vec2(-_offsetX*getScale(), 0));
+
+	resetHillVertices();
 }
 
 void Terrain::setStripes(Sprite *stripes)
@@ -101,4 +107,21 @@ void Terrain::setStripes(Sprite *stripes)
 	if (_stripes) {
 		_stripes->retain();
 	}
+}
+
+void Terrain::resetHillVertices()
+{
+	Size winSize = Director::getInstance()->getWinSize();
+
+	static int prevFromKeyPointI = -1;
+	static int prevToKeyPointI = -1;
+
+	// key points interval for drawing
+	while (_hillKeyPoints[_fromKeyPointI + 1].x < _offsetX - winSize.width / 8 / getScale()) {
+		_fromKeyPointI++;
+	}
+	while (_hillKeyPoints[_toKeyPointI].x < _offsetX + winSize.width * 12 / 8 / getScale()) {
+		_toKeyPointI++;
+	}
+
 }

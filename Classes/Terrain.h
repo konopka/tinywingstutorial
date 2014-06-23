@@ -26,8 +26,11 @@ private:
 	Sprite *_stripes;
 	int _offsetX;
 	Vec2 _hillKeyPoints[kMaxHillKeyPoints];
+	int _fromKeyPointI;
+	int _toKeyPointI;
 
 	void generateHills();
+	void resetHillVertices();
 };
 
 #endif	// _TERRAIN_H__
