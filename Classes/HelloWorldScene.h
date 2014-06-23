@@ -28,6 +28,8 @@ private:
 
 	Sprite* stripedSpriteWithColor(Color4F c1, Color4F c2, float textureWidth, float textureHeight, int nStripes);
 	void onDrawStripes(Color4F c2, float textureWidth, float textureHeight, int nStripes);
+
+	void update(float dt);
 };
 
 #endif // __HELLOWORLD_SCENE_H__

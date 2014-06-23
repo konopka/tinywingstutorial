@@ -187,12 +187,15 @@ void HelloWorld::genBackground()
 	Color4F bgColor = randomBrightColor();
 	Color4F color2 = randomBrightColor();
 	//_background = spriteWithColor(bgColor, 512, 512);
-	
+
 	int nStripes = ((rand() % 4) + 1) * 2;
 	_background = stripedSpriteWithColor(bgColor, color2, 512, 512, nStripes);
 
 	Size winSize = Director::getInstance()->getWinSize();
 	_background->setPosition(Vec2(winSize.width / 2, winSize.height / 2));
+
+	Texture2D::TexParams tp = { GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT };
+	_background->getTexture()->setTexParameters(&tp);
 
 	addChild(_background);
 }
@@ -207,9 +210,21 @@ void HelloWorld::onEnter()
 	auto listener = EventListenerTouchAllAtOnce::create();
 	listener->onTouchesBegan = CC_CALLBACK_2(HelloWorld::onTouchesBegan, this);
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+
+	scheduleUpdate();
 }
 
 void HelloWorld::onTouchesBegan(const std::vector<Touch*>& touches, Event *unused_event)
 {
 	genBackground();
+}
+
+void HelloWorld::update(float dt)
+{
+	float PIXELS_PER_SECOND = 100;
+	static float offset = 0;
+	offset += PIXELS_PER_SECOND * dt;
+
+	Size textureSize = _background->getTextureRect().size;
+	_background->setTextureRect(Rect(offset, 0, textureSize.width, textureSize.height));
 }
