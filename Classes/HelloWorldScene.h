@@ -19,15 +19,18 @@ public:
 
 private:
 	Sprite *_background;
-	CustomCommand _command;
+	CustomCommand _stripes_command;
+	CustomCommand _gradient_command;
+	CustomCommand _tophighlight_command;
 
 	Sprite* spriteWithColor(Color4F bgColor, float textureWidth, float textureHeight);
 	Color4F randomBrightColor();
 	void genBackground();
-	void onDrawGradient();
+	void onDrawGradient(float textureWidth, float textureHeight);
 
 	Sprite* stripedSpriteWithColor(Color4F c1, Color4F c2, float textureWidth, float textureHeight, int nStripes);
 	void onDrawStripes(Color4F c2, float textureWidth, float textureHeight, int nStripes);
+	void onDrawTopHighlight(float textureWidth, float textureHeight);
 
 	void update(float dt);
 };

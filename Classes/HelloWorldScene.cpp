@@ -35,10 +35,10 @@ Sprite* HelloWorld::spriteWithColor(Color4F bgColor, float textureWidth, float t
 	// 3: Draw into the texture
 
 	//// gradient
-	_command.init(rt->getGlobalZOrder());
-	_command.func = CC_CALLBACK_0(HelloWorld::onDrawGradient, this);
+	_gradient_command.init(rt->getGlobalZOrder());
+	_gradient_command.func = std::bind(&HelloWorld::onDrawGradient, this, textureWidth, textureHeight);
 	auto renderer = Director::getInstance()->getRenderer();
-	renderer->addCommand(&_command);
+	renderer->addCommand(&_gradient_command);
 
 	//// noise cloud
 	Sprite *noise = Sprite::create("Noise.png");
@@ -53,13 +53,11 @@ Sprite* HelloWorld::spriteWithColor(Color4F bgColor, float textureWidth, float t
 	return Sprite::createWithTexture(rt->getSprite()->getTexture());
 }
 
-void HelloWorld::onDrawGradient()
+void HelloWorld::onDrawGradient(float textureWidth, float textureHeight)
 {
 	setGLProgram(ShaderCache::getInstance()->getGLProgram(GLProgram::SHADER_NAME_POSITION_COLOR));
 	getGLProgram()->use();
 	getGLProgram()->setUniformsForBuiltins();
-
-	Size winSize = Director::getInstance()->getWinSize();
 
 	float gradientAlpha = 0.7f;
 
@@ -70,18 +68,18 @@ void HelloWorld::onDrawGradient()
 	vertices.push_back(Vec2(0, 0));
 	colors.push_back(Color4F{ 0, 0, 0, 0 });
 
-	vertices.push_back(Vec2(winSize.width, 0));
+	vertices.push_back(Vec2(textureWidth, 0));
 	colors.push_back(Color4F{ 0, 0, 0, 0 });
 
-	vertices.push_back(Vec2(0, winSize.height));
+	vertices.push_back(Vec2(0, textureHeight));
 	colors.push_back(Color4F{ 0, 0, 0, gradientAlpha });
 
-	vertices.push_back(Vec2(winSize.width, winSize.height));
+	vertices.push_back(Vec2(textureWidth, textureHeight));
 	colors.push_back(Color4F{ 0, 0, 0, gradientAlpha });
 
 	GL::enableVertexAttribs(GL::VERTEX_ATTRIB_FLAG_POSITION | GL::VERTEX_ATTRIB_FLAG_COLOR);
 	glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, vertices.data());
-	glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_COLOR, 4, GL_FLOAT, GL_FALSE, 0, colors.data());
+	glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_COLOR, 4, GL_FLOAT, GL_TRUE, 0, colors.data());
 	glBlendFunc(CC_BLEND_SRC, CC_BLEND_DST);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, (GLsizei)vertices.size());
 }
@@ -97,10 +95,20 @@ Sprite* HelloWorld::stripedSpriteWithColor(Color4F c1, Color4F c2, float texture
 	// 3: Draw into the texture
 
 	// we have to run custom command on renderer
-	_command.init(rt->getGlobalZOrder());
-	_command.func = std::bind(&HelloWorld::onDrawStripes, this, c2, textureWidth, textureHeight, nStripes);  //CC_CALLBACK_0(HelloWorld::onDrawStripes, this);
+	_stripes_command.init(rt->getGlobalZOrder());
+	_stripes_command.func = std::bind(&HelloWorld::onDrawStripes, this, c2, textureWidth, textureHeight, nStripes);
 	auto renderer = Director::getInstance()->getRenderer();
-	renderer->addCommand(&_command);
+	renderer->addCommand(&_stripes_command);
+
+	// gradient
+	_gradient_command.init(rt->getGlobalZOrder());
+	_gradient_command.func = std::bind(&HelloWorld::onDrawGradient, this, textureWidth, textureHeight);
+	renderer->addCommand(&_gradient_command);
+
+	// gradient
+	_tophighlight_command.init(rt->getGlobalZOrder());
+	_tophighlight_command.func = std::bind(&HelloWorld::onDrawTopHighlight, this, textureWidth, textureHeight);
+	renderer->addCommand(&_tophighlight_command);
 
 	// noise cloud
 	Sprite *noise = Sprite::create("Noise.png");
@@ -160,6 +168,36 @@ void HelloWorld::onDrawStripes(Color4F c2, float textureWidth, float textureHeig
 	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertices.size());
 }
 
+void HelloWorld::onDrawTopHighlight(float textureWidth, float textureHeight)
+{
+	float borderHeight = textureHeight / 16;
+	float borderAlpha = 0.3f;
+
+	std::vector<Vec2> vertices;
+	std::vector<Color4F> colors;
+
+	vertices.push_back(Vec2(0, 0));
+	colors.push_back(Color4F{ 1, 1, 1, borderAlpha });
+
+	vertices.push_back(Vec2(textureWidth, 0));
+	colors.push_back(Color4F{ 1, 1, 1, borderAlpha });
+
+	vertices.push_back(Vec2(0, borderHeight));
+	colors.push_back(Color4F{ 0, 0, 0, 0 });
+
+	vertices.push_back(Vec2(textureWidth, borderHeight));
+	colors.push_back(Color4F{ 0, 0, 0, 0 });
+
+	setGLProgram(ShaderCache::getInstance()->getGLProgram(GLProgram::SHADER_NAME_POSITION_COLOR));
+	getGLProgram()->use();
+	getGLProgram()->setUniformsForBuiltins();
+
+	GL::enableVertexAttribs(GL::VERTEX_ATTRIB_FLAG_POSITION | GL::VERTEX_ATTRIB_FLAG_COLOR);
+	glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, vertices.data());
+	glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_COLOR, 4, GL_FLOAT, GL_TRUE, 0, colors.data());
+	glBlendFunc(CC_BLEND_SRC, CC_BLEND_DST);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, (GLsizei)vertices.size());
+}
 
 Color4F HelloWorld::randomBrightColor()
 {
