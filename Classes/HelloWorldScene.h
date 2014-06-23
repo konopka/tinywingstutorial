@@ -24,6 +24,7 @@ private:
 	Sprite* spriteWithColor(Color4F bgColor, float textureWidth, float textureHeight);
 	Color4F randomBrightColor();
 	void genBackground();
+	void onDrawGradient();
 };
 
 #endif // __HELLOWORLD_SCENE_H__
