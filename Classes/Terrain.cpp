@@ -85,6 +85,28 @@ void Terrain::draw(Renderer *renderer, const Mat4& transform, uint32_t flags)
 	for (int i = MAX(_fromKeyPointI, 1); i <= _toKeyPointI; ++i) {
 		DrawPrimitives::setDrawColor4F(1.0, 0, 0, 1.0);
 		DrawPrimitives::drawLine(_hillKeyPoints[i - 1], _hillKeyPoints[i]);
+
+		DrawPrimitives::setDrawColor4F(1.0, 1.0, 1.0, 1.0);
+
+		Vec2 p0 = _hillKeyPoints[i - 1];
+		Vec2 p1 = _hillKeyPoints[i];
+		int hSegments = floorf((p1.x - p0.x) / kHillSegmentWidth);
+		float dx = (p1.x - p0.x) / hSegments;
+		float da = M_PI / hSegments;
+		float ymid = (p0.y + p1.y) / 2;
+		float ampl = (p0.y - p1.y) / 2;
+
+		Vec2 pt0, pt1;
+		pt0 = p0;
+
+		for (int j = 0; j < hSegments + 1; ++j) {
+			pt1.x = p0.x + j*dx;
+			pt1.y = ymid + ampl * cosf(da*j);
+
+			ccDrawLine(pt0, pt1);
+
+			pt0 = pt1;
+		}
 	}
 }
 

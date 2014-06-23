@@ -255,8 +255,6 @@ void HelloWorld::onEnter()
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
 
 	scheduleUpdate();
-
-	setScale(0.25f);
 }
 
 void HelloWorld::onTouchesBegan(const std::vector<Touch*>& touches, Event *unused_event)

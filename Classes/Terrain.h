@@ -7,6 +7,7 @@
 using namespace cocos2d;
 
 #define kMaxHillKeyPoints 1000
+#define kHillSegmentWidth 10
 
 class Terrain :
 	public Node
