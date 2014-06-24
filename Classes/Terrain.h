@@ -8,6 +8,8 @@ using namespace cocos2d;
 
 #define kMaxHillKeyPoints 1000
 #define kHillSegmentWidth 10
+#define kMaxHillVertices 4000
+#define kMaxBorderVertices 800 
 
 class Terrain :
 	public Node
@@ -29,6 +31,12 @@ private:
 	Vec2 _hillKeyPoints[kMaxHillKeyPoints];
 	int _fromKeyPointI;
 	int _toKeyPointI;
+
+	int _nHillVertices;
+	Vec2 _hillVertices[kMaxHillVertices];
+	Vec2 _hillTexCoords[kMaxHillVertices];
+	int _nBorderVertices;
+	Vec2 _borderVertices[kMaxBorderVertices];
 
 	void generateHills();
 	void resetHillVertices();

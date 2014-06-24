@@ -31,6 +31,7 @@ bool Terrain::init()
 		return false;
 	}
 
+	setShaderProgram(ShaderCache::getInstance()->programForKey(GLProgram::SHADER_NAME_POSITION_TEXTURE));
 	generateHills();
 	resetHillVertices();
 
@@ -82,6 +83,17 @@ void Terrain::generateHills()
 
 void Terrain::draw(Renderer *renderer, const Mat4& transform, uint32_t flags)
 {
+	CC_NODE_DRAW_SETUP();
+
+	GL::bindTexture2D(_stripes->getTexture()->getName());
+	GL::enableVertexAttribs(GL::VERTEX_ATTRIB_FLAG_POSITION | GL::VERTEX_ATTRIB_FLAG_TEX_COORD);
+
+	ccDrawColor4F(1.0f, 1.0f, 1.0f, 1.0f);
+	glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, _hillVertices);
+	glVertexAttribPointer(kCCVertexAttrib_TexCoords, 2, GL_FLOAT, GL_FALSE, 0, _hillTexCoords);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, (GLsizei)_nHillVertices);
+
 	for (int i = MAX(_fromKeyPointI, 1); i <= _toKeyPointI; ++i) {
 		DrawPrimitives::setDrawColor4F(1.0, 0, 0, 1.0);
 		DrawPrimitives::drawLine(_hillKeyPoints[i - 1], _hillKeyPoints[i]);
@@ -146,4 +158,50 @@ void Terrain::resetHillVertices()
 		_toKeyPointI++;
 	}
 
+	float minY = 0;
+	if (winSize.height > 480) {
+		minY = (1136 - 1024) / 4;
+	}
+	if (prevFromKeyPointI != _fromKeyPointI || prevToKeyPointI != _toKeyPointI) {
+
+		// vertices for visible area
+		_nHillVertices = 0;
+		_nBorderVertices = 0;
+		Vec2 p0, p1, pt0, pt1;
+		p0 = _hillKeyPoints[_fromKeyPointI];
+		for (int i = _fromKeyPointI + 1; i<_toKeyPointI + 1; i++) {
+			p1 = _hillKeyPoints[i];
+
+			// triangle strip between p0 and p1
+			int hSegments = floorf((p1.x - p0.x) / kHillSegmentWidth);
+			float dx = (p1.x - p0.x) / hSegments;
+			float da = M_PI / hSegments;
+			float ymid = (p0.y + p1.y) / 2;
+			float ampl = (p0.y - p1.y) / 2;
+			pt0 = p0;
+			_borderVertices[_nBorderVertices++] = pt0;
+			for (int j = 1; j<hSegments + 1; j++) {
+				pt1.x = p0.x + j*dx;
+				pt1.y = ymid + ampl * cosf(da*j);
+				_borderVertices[_nBorderVertices++] = pt1;
+
+				_hillVertices[_nHillVertices] = Vec2(pt0.x, 0 + minY);
+				_hillTexCoords[_nHillVertices++] = Vec2(pt0.x / 512, 1.0f);
+				_hillVertices[_nHillVertices] = Vec2(pt1.x, 0 + minY);
+				_hillTexCoords[_nHillVertices++] = Vec2(pt1.x / 512, 1.0f);
+
+				_hillVertices[_nHillVertices] = Vec2(pt0.x, pt0.y);
+				_hillTexCoords[_nHillVertices++] = Vec2(pt0.x / 512, 0);
+				_hillVertices[_nHillVertices] = Vec2(pt1.x, pt1.y);
+				_hillTexCoords[_nHillVertices++] = Vec2(pt1.x / 512, 0);
+
+				pt0 = pt1;
+			}
+
+			p0 = p1;
+		}
+
+		prevFromKeyPointI = _fromKeyPointI;
+		prevToKeyPointI = _toKeyPointI;
+	}
 }
