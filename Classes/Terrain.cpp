@@ -38,6 +38,39 @@ bool Terrain::init()
 	return true;
 }
 
+Terrain* Terrain::create(b2World *world)
+{
+	Terrain* ret = new Terrain();
+	if (ret && ret->initWithWorld(world)) {
+		return ret;
+	}
+
+	return nullptr;
+}
+
+bool Terrain::initWithWorld(b2World *world)
+{
+	if (!Node::init()) {
+		return false;
+	}
+
+	_world = world;
+	setupDebugDraw();
+	generateHills();
+	resetHillVertices();
+
+	setShaderProgram(ShaderCache::getInstance()->programForKey(GLProgram::SHADER_NAME_POSITION_TEXTURE));
+
+	return true;
+}
+
+void Terrain::setupDebugDraw()
+{
+	_debugDraw = new GLESDebugDraw(PTM_RATIO);
+	_world->SetDebugDraw(_debugDraw);
+	_debugDraw->SetFlags(GLESDebugDraw::e_shapeBit | GLESDebugDraw::e_jointBit);
+}
+
 void Terrain::generateHills()
 {
 	Size winSize = Director::getInstance()->getWinSize();
@@ -120,6 +153,8 @@ void Terrain::draw(Renderer *renderer, const Mat4& transform, uint32_t flags)
 			pt0 = pt1;
 		}
 	}
+
+	_world->DrawDebugData();
 }
 
 void Terrain::setOffsetX(float nOffsetX)
@@ -162,8 +197,8 @@ void Terrain::resetHillVertices()
 	if (winSize.height > 480) {
 		minY = (1136 - 1024) / 4;
 	}
-	if (prevFromKeyPointI != _fromKeyPointI || prevToKeyPointI != _toKeyPointI) {
 
+	if (prevFromKeyPointI != _fromKeyPointI || prevToKeyPointI != _toKeyPointI) {
 		// vertices for visible area
 		_nHillVertices = 0;
 		_nBorderVertices = 0;
@@ -203,5 +238,32 @@ void Terrain::resetHillVertices()
 
 		prevFromKeyPointI = _fromKeyPointI;
 		prevToKeyPointI = _toKeyPointI;
+
+		resetBox2DBody();
 	}
+}
+
+void Terrain::resetBox2DBody()
+{
+	if (_body) return;
+
+	Vec2 p0 = _hillKeyPoints[0];
+	Vec2 p1 = _hillKeyPoints[kMaxHillKeyPoints - 1];
+
+	b2BodyDef bd;
+	bd.position.Set(0, 0);
+	_body = _world->CreateBody(&bd);
+
+	b2EdgeShape shape;
+
+	float minY = 0;
+	Size winSize = Director::getInstance()->getWinSize();
+	if (winSize.height > 480) {
+		minY = (1136 - 1024) / 4;
+	}
+
+	b2Vec2 ep1 = b2Vec2(p0.x / PTM_RATIO, minY / PTM_RATIO);
+	b2Vec2 ep2 = b2Vec2(p1.x / PTM_RATIO, minY / PTM_RATIO);
+	shape.Set(ep1, ep2);
+	_body->CreateFixture(&shape, 0);
 }

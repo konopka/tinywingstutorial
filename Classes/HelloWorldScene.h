@@ -24,6 +24,7 @@ private:
 	CustomCommand _tophighlight_command;
 
 	Terrain *_terrain;
+	b2World *_world;
 
 	Sprite* spriteWithColor(Color4F bgColor, float textureWidth, float textureHeight);
 	Color4F randomBrightColor();
@@ -35,6 +36,10 @@ private:
 	void onDrawTopHighlight(float textureWidth, float textureHeight);
 
 	void update(float dt);
+
+	void setupWorld();
+	void createTestBodyAtPostition(Vec2 position);
+
 };
 
 #endif // __HELLOWORLD_SCENE_H__

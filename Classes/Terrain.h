@@ -3,6 +3,7 @@
 
 #include "cocos2d.h"
 #include "Box2D\Box2D.h"
+#include "GLES-Render.h"
 
 using namespace cocos2d;
 
@@ -10,6 +11,8 @@ using namespace cocos2d;
 #define kHillSegmentWidth 10
 #define kMaxHillVertices 4000
 #define kMaxBorderVertices 800 
+
+#define PTM_RATIO 32.0f
 
 class Terrain :
 	public Node
@@ -19,7 +22,9 @@ public:
 	~Terrain();	
 
 	static Terrain* create();
+	static Terrain* create(b2World *world);
 	bool init();
+	bool initWithWorld(b2World *world);
 
 	void setStripes(Sprite *stripes);
 	void setOffsetX(float nOffsetX);
@@ -38,8 +43,15 @@ private:
 	int _nBorderVertices;
 	Vec2 _borderVertices[kMaxBorderVertices];
 
+	b2World *_world;
+	b2Body *_body;
+	GLESDebugDraw *_debugDraw;
+
 	void generateHills();
 	void resetHillVertices();
+
+	void resetBox2DBody();
+	void setupDebugDraw();
 };
 
 #endif	// _TERRAIN_H__
