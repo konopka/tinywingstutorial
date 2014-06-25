@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #include "Terrain.h"
 #include "GLES-Render.h"
+#include "Hero.h"
 
 USING_NS_CC;
 
@@ -16,6 +17,8 @@ public:
 		
 	virtual void onEnter();
 	virtual void onTouchesBegan(const std::vector<Touch*>& touches, Event *unused_event);
+	virtual void onTouchesEnded(const std::vector<Touch*>& touches, Event *unused_event);
+	virtual void onTouchesCancelled(const std::vector<Touch*>& touches, Event *unused_event);
 
 private:
 	Sprite *_background;
@@ -25,6 +28,10 @@ private:
 
 	Terrain *_terrain;
 	b2World *_world;
+
+	Hero *_hero;
+
+	bool _tapDown;
 
 	Sprite* spriteWithColor(Color4F bgColor, float textureWidth, float textureHeight);
 	Color4F randomBrightColor();

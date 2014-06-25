@@ -68,6 +68,11 @@ bool Terrain::initWithWorld(b2World *world)
 
 	setShaderProgram(ShaderCache::getInstance()->programForKey(GLProgram::SHADER_NAME_POSITION_TEXTURE));
 
+	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("TinySeal.plist");
+	_batchNode = SpriteBatchNode::create("TinySeal.png");
+	_batchNode->retain();
+	addChild(_batchNode);	
+
 	return true;
 }
 
@@ -134,40 +139,42 @@ void Terrain::draw(Renderer *renderer, const Mat4& transform, uint32_t flags)
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, (GLsizei)_nHillVertices);
 
-	for (int i = MAX(_fromKeyPointI, 1); i <= _toKeyPointI; ++i) {
-		DrawPrimitives::setDrawColor4F(1.0, 0, 0, 1.0);
-		DrawPrimitives::drawLine(_hillKeyPoints[i - 1], _hillKeyPoints[i]);
+	//for (int i = MAX(_fromKeyPointI, 1); i <= _toKeyPointI; ++i) {
+	//	DrawPrimitives::setDrawColor4F(1.0, 0, 0, 1.0);
+	//	DrawPrimitives::drawLine(_hillKeyPoints[i - 1], _hillKeyPoints[i]);
 
-		DrawPrimitives::setDrawColor4F(1.0, 1.0, 1.0, 1.0);
+	//	DrawPrimitives::setDrawColor4F(1.0, 1.0, 1.0, 1.0);
 
-		Vec2 p0 = _hillKeyPoints[i - 1];
-		Vec2 p1 = _hillKeyPoints[i];
-		int hSegments = floorf((p1.x - p0.x) / kHillSegmentWidth);
-		float dx = (p1.x - p0.x) / hSegments;
-		float da = M_PI / hSegments;
-		float ymid = (p0.y + p1.y) / 2;
-		float ampl = (p0.y - p1.y) / 2;
+	//	Vec2 p0 = _hillKeyPoints[i - 1];
+	//	Vec2 p1 = _hillKeyPoints[i];
+	//	int hSegments = floorf((p1.x - p0.x) / kHillSegmentWidth);
+	//	float dx = (p1.x - p0.x) / hSegments;
+	//	float da = M_PI / hSegments;
+	//	float ymid = (p0.y + p1.y) / 2;
+	//	float ampl = (p0.y - p1.y) / 2;
 
-		Vec2 pt0, pt1;
-		pt0 = p0;
+	//	Vec2 pt0, pt1;
+	//	pt0 = p0;
 
-		for (int j = 0; j < hSegments + 1; ++j) {
-			pt1.x = p0.x + j*dx;
-			pt1.y = ymid + ampl * cosf(da*j);
+	//	for (int j = 0; j < hSegments + 1; ++j) {
+	//		pt1.x = p0.x + j*dx;
+	//		pt1.y = ymid + ampl * cosf(da*j);
 
-			ccDrawLine(pt0, pt1);
+	//		ccDrawLine(pt0, pt1);
 
-			pt0 = pt1;
-		}
-	}
+	//		pt0 = pt1;
+	//	}
+	//}
 
-	_world->DrawDebugData();
+	//_world->DrawDebugData();
 }
 
 void Terrain::setOffsetX(float nOffsetX)
 {
+	Size winSize = Director::getInstance()->getWinSize();
+
 	_offsetX = nOffsetX;
-	setPosition(Vec2(-_offsetX*getScale(), 0));
+	setPosition(Vec2(winSize.width / 8 - _offsetX * getScale(), 0));
 
 	resetHillVertices();
 }
@@ -270,4 +277,9 @@ void Terrain::resetBox2DBody()
 		shape.Set(p1, p2);
 		_body->CreateFixture(&shape, 0);
 	}
+}
+
+SpriteBatchNode* Terrain::getBatchNode()
+{
+	return _batchNode;
 }

@@ -1,6 +1,7 @@
 
 #include "HelloWorldScene.h"
 
+
 Scene* HelloWorld::createScene()
 {
 	auto scene = Scene::create();
@@ -79,7 +80,7 @@ void HelloWorld::onDrawGradient(float textureWidth, float textureHeight)
 
 	GL::enableVertexAttribs(GL::VERTEX_ATTRIB_FLAG_POSITION | GL::VERTEX_ATTRIB_FLAG_COLOR);
 	glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, vertices.data());
-	glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_COLOR, 4, GL_FLOAT, GL_TRUE, 0, colors.data());
+	glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_COLOR, 4, GL_FLOAT, GL_FALSE, 0, colors.data());
 	glBlendFunc(CC_BLEND_SRC, CC_BLEND_DST);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, (GLsizei)vertices.size());
 }
@@ -230,7 +231,8 @@ void HelloWorld::genBackground()
 	Texture2D::TexParams tp = { GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT };
 	_background->getTexture()->setTexParameters(&tp);
 
-	addChild(_background, 0);
+	addChild(_background);
+	_background->setVisible(false);
 
 	Color4F color3 = randomBrightColor();
 	Color4F color4 = randomBrightColor();
@@ -279,21 +281,54 @@ void HelloWorld::onEnter()
 	// Enable Touches/Mouse.
 	auto listener = EventListenerTouchAllAtOnce::create();
 	listener->onTouchesBegan = CC_CALLBACK_2(HelloWorld::onTouchesBegan, this);
+	listener->onTouchesEnded = CC_CALLBACK_2(HelloWorld::onTouchesEnded, this);
+	listener->onTouchesCancelled = CC_CALLBACK_2(HelloWorld::onTouchesCancelled, this);
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
 
 	scheduleUpdate();
+
+	_hero = Hero::create(_world);
+	_hero->autorelease();
+	_terrain->getBatchNode()->addChild(_hero);	
 }
 
 void HelloWorld::onTouchesBegan(const std::vector<Touch*>& touches, Event *unused_event)
 {
 	genBackground();
 
+	_tapDown = true;
+
 	Vec2 touchLocation = _terrain->convertTouchToNodeSpace(touches.front());
 	createTestBodyAtPostition(touchLocation);
 }
 
+void HelloWorld::onTouchesEnded(const std::vector<Touch*>& touches, Event *unused_event)
+{
+	_tapDown = false;
+}
+
+void HelloWorld::onTouchesCancelled(const std::vector<Touch*>& touches, Event *unused_event)
+{
+	_tapDown = false;
+}
+
 void HelloWorld::update(float dt)
 {
+	if (_tapDown) {
+		if (!_hero->isAwake()) {
+			_hero->wake();
+			_tapDown = false;
+		}
+		else {
+			_hero->dive();
+		}
+	}
+	else {
+		_hero->nodive();
+	}
+
+	_hero->limitVelocity();
+
 	static double UPDATE_INTERVAL = 1.0f / 60.0f;
 	static double MAX_CYCLES_PER_FRAME = 5;
 	static double timeAccumulator = 0;
@@ -313,12 +348,19 @@ void HelloWorld::update(float dt)
 
 	}
 
-	float PIXELS_PER_SECOND = 100;
-	static float offset = 0;
-	offset += PIXELS_PER_SECOND * dt;
+	//float PIXELS_PER_SECOND = 100;
+	//static float offset = 0;
+	//offset += PIXELS_PER_SECOND * dt;
+	_hero->update();
+
+	Size winSize = Director::getInstance()->getWinSize();
+	float scale = (winSize.height * 3 / 4) / _hero->getPosition().y;
+	if (scale > 1) scale = 1;
+	_terrain->setScale(scale);
+
+	float offset = _hero->getPosition().x;
 
 	Size textureSize = _background->getTextureRect().size;
 	_background->setTextureRect(Rect(offset, 0, textureSize.width, textureSize.height));
-
 	_terrain->setOffsetX(offset);
 }

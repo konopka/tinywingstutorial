@@ -30,6 +30,8 @@ public:
 	void setOffsetX(float nOffsetX);
 
 	virtual void draw(Renderer *renderer, const Mat4& transform, uint32_t flags);
+
+	SpriteBatchNode* getBatchNode();
 private:
 	Sprite *_stripes;
 	int _offsetX;
@@ -46,6 +48,8 @@ private:
 	b2World *_world;
 	b2Body *_body;
 	GLESDebugDraw *_debugDraw;
+
+	SpriteBatchNode *_batchNode;
 
 	void generateHills();
 	void resetHillVertices();
