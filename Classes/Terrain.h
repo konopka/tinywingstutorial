@@ -21,11 +21,14 @@ public:
 	Terrain();
 	~Terrain();	
 
+	CustomCommand _draw_command;
+
 	static Terrain* create();
 	static Terrain* create(b2World *world);
 	bool init();
 	bool initWithWorld(b2World *world);
 
+	void onDrawTerrain();
 	void setStripes(Sprite *stripes);
 	void setOffsetX(float nOffsetX);
 

@@ -98,7 +98,7 @@ void Terrain::generateHills()
 	float dy, ny;
 	float sign = 1; // +1 - going up, -1 - going  down
 	float paddingTop = 20;
-	float paddingBottom = 20;
+	float paddingBottom = 0;
 
 	for (int i = 0; i<kMaxHillKeyPoints; i++) {
 		_hillKeyPoints[i] = Vec2(x, y);
@@ -126,8 +126,30 @@ void Terrain::generateHills()
 	}
 }
 
+void Terrain::onDrawTerrain()
+{
+	CC_NODE_DRAW_SETUP();
+
+	GL::bindTexture2D(_stripes->getTexture()->getName());
+	GL::enableVertexAttribs(GL::VERTEX_ATTRIB_FLAG_POSITION | GL::VERTEX_ATTRIB_FLAG_TEX_COORD);
+
+	ccDrawColor4F(1.0f, 1.0f, 1.0f, 1.0f);
+	glVertexAttribPointer(kCCVertexAttrib_Position, 2, GL_FLOAT, GL_FALSE, 0, _hillVertices);
+	glVertexAttribPointer(kCCVertexAttrib_TexCoords, 2, GL_FLOAT, GL_FALSE, 0, _hillTexCoords);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, (GLsizei)_nHillVertices);
+}
+
 void Terrain::draw(Renderer *renderer, const Mat4& transform, uint32_t flags)
 {
+	_draw_command.init(this->getGlobalZOrder());
+	_draw_command.func = std::bind(&Terrain::onDrawTerrain, this);
+
+	renderer->addCommand(&_draw_command);
+
+
+	return;
+
 	CC_NODE_DRAW_SETUP();
 
 	GL::bindTexture2D(_stripes->getTexture()->getName());
