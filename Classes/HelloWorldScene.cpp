@@ -42,8 +42,12 @@ Sprite* HelloWorld::spriteWithColor(Color4F bgColor, float textureWidth, float t
 	renderer->addCommand(&_gradient_command);
 
 	//// noise cloud
+	BlendFunc blendFunc;
+	blendFunc.src = GL_DST_COLOR;
+	blendFunc.dst = GL_ZERO;
+
 	Sprite *noise = Sprite::create("Noise.png");
-	noise->setBlendFunc(BlendFunc{ GL_DST_COLOR, GL_ZERO });
+	noise->setBlendFunc(blendFunc);
 	noise->setPosition(Vec2(textureWidth / 2, textureHeight / 2));
 	noise->visit();
 
@@ -60,23 +64,23 @@ void HelloWorld::onDrawGradient(float textureWidth, float textureHeight)
 	getGLProgram()->use();
 	getGLProgram()->setUniformsForBuiltins();
 
-	float gradientAlpha = 0.7f;
+	float gradientAlpha = 0.8f;
 
 	int nVertices = 0;
 	std::vector<Vec2> vertices;
 	std::vector<Color4F> colors;
 
 	vertices.push_back(Vec2(0, 0));
-	colors.push_back(Color4F{ 0, 0, 0, 0 });
+	colors.push_back(Color4F( 0, 0, 0, 0 ));
 
 	vertices.push_back(Vec2(textureWidth, 0));
-	colors.push_back(Color4F{ 0, 0, 0, 0 });
+	colors.push_back(Color4F( 0.0f, 0.0f, 0.0f, 0.0f ));
 
 	vertices.push_back(Vec2(0, textureHeight));
-	colors.push_back(Color4F{ 0, 0, 0, gradientAlpha });
+	colors.push_back(Color4F( 0, 0, 0, gradientAlpha ));
 
 	vertices.push_back(Vec2(textureWidth, textureHeight));
-	colors.push_back(Color4F{ 0, 0, 0, gradientAlpha });
+	colors.push_back(Color4F( 0, 0, 0, gradientAlpha ));
 
 	GL::enableVertexAttribs(GL::VERTEX_ATTRIB_FLAG_POSITION | GL::VERTEX_ATTRIB_FLAG_COLOR);
 	glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, vertices.data());
@@ -112,8 +116,12 @@ Sprite* HelloWorld::stripedSpriteWithColor(Color4F c1, Color4F c2, float texture
 	renderer->addCommand(&_tophighlight_command);
 
 	// noise cloud
+	BlendFunc blendFunc;
+	blendFunc.src = GL_DST_COLOR;
+	blendFunc.dst = GL_ZERO;
+
 	Sprite *noise = Sprite::create("Noise.png");
-	noise->setBlendFunc(BlendFunc{ GL_DST_COLOR, GL_ZERO });
+	noise->setBlendFunc(blendFunc);
 	noise->setPosition(Vec2(textureWidth / 2, textureHeight / 2));
 	noise->visit();
 
@@ -139,22 +147,22 @@ void HelloWorld::onDrawStripes(Color4F c2, float textureWidth, float textureHeig
 		x2 = x1 + textureHeight;
 
 		vertices.push_back(Vec2(x1, y1));
-		colors.push_back(Color4F{ c2.r, c2.g, c2.b, c2.a });
+		colors.push_back(Color4F( c2.r, c2.g, c2.b, c2.a ));
 
 		vertices.push_back(Vec2(x1 + stripeWidth, y1));
-		colors.push_back(Color4F{ c2.r, c2.g, c2.b, c2.a });
+		colors.push_back(Color4F( c2.r, c2.g, c2.b, c2.a ));
 
 		vertices.push_back(Vec2(x2, y2));
-		colors.push_back(Color4F{ c2.r, c2.g, c2.b, c2.a });
+		colors.push_back(Color4F( c2.r, c2.g, c2.b, c2.a ));
 
 		vertices.push_back(vertices[vertices.size() - 2]);
-		colors.push_back(Color4F{ c2.r, c2.g, c2.b, c2.a });
+		colors.push_back(Color4F( c2.r, c2.g, c2.b, c2.a ));
 
 		vertices.push_back(vertices[vertices.size() - 2]);
-		colors.push_back(Color4F{ c2.r, c2.g, c2.b, c2.a });
+		colors.push_back(Color4F( c2.r, c2.g, c2.b, c2.a ));
 
 		vertices.push_back(Vec2(x2 + stripeWidth, y2));
-		colors.push_back(Color4F{ c2.r, c2.g, c2.b, c2.a });
+		colors.push_back(Color4F( c2.r, c2.g, c2.b, c2.a ));
 		x1 += dx;
 	}
 
@@ -178,16 +186,16 @@ void HelloWorld::onDrawTopHighlight(float textureWidth, float textureHeight)
 	std::vector<Color4F> colors;
 
 	vertices.push_back(Vec2(0, 0));
-	colors.push_back(Color4F{ 1, 1, 1, borderAlpha });
-
+	colors.push_back(Color4F( 1, 1, 1, borderAlpha ));
+	
 	vertices.push_back(Vec2(textureWidth, 0));
-	colors.push_back(Color4F{ 1, 1, 1, borderAlpha });
+	colors.push_back(Color4F( 1, 1, 1, borderAlpha ));
 
 	vertices.push_back(Vec2(0, borderHeight));
-	colors.push_back(Color4F{ 0, 0, 0, 0 });
+	colors.push_back(Color4F( 0, 0, 0, 0 ));
 
 	vertices.push_back(Vec2(textureWidth, borderHeight));
-	colors.push_back(Color4F{ 0, 0, 0, 0 });
+	colors.push_back(Color4F( 0, 0, 0, 0 ));
 
 	setGLProgram(ShaderCache::getInstance()->getGLProgram(GLProgram::SHADER_NAME_POSITION_COLOR));
 	getGLProgram()->use();
@@ -223,16 +231,19 @@ void HelloWorld::genBackground()
 		_background->removeFromParentAndCleanup(true);
 	}
 
+	Size winSize = Director::getInstance()->getWinSize();
+
 	Color4F bgColor = randomBrightColor();
 	_background = spriteWithColor(bgColor, 512, 512);
-
-	Size winSize = Director::getInstance()->getWinSize();
 	_background->setPosition(Vec2(winSize.width / 2, winSize.height / 2));
 	Texture2D::TexParams tp = { GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT };
 	_background->getTexture()->setTexParameters(&tp);
 
-	addChild(_background);
-	_background->setVisible(false);
+	//_background->setContentSize( CCSize(winSize.width  , winSize.height) );
+	_background->setScale(winSize.width / _background->getContentSize().width, winSize.height / _background->getContentSize().height);
+
+	addChild(_background, 0);
+	_background->setVisible(true);
 
 	Color4F color3 = randomBrightColor();
 	Color4F color4 = randomBrightColor();
@@ -361,6 +372,6 @@ void HelloWorld::update(float dt)
 	float offset = _hero->getPosition().x;
 
 	Size textureSize = _background->getTextureRect().size;
-	_background->setTextureRect(Rect(offset, 0, textureSize.width, textureSize.height));
+	//_background->setTextureRect(Rect(offset, 0, textureSize.width, textureSize.height));
 	_terrain->setOffsetX(offset);
 }
